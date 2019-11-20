@@ -1,9 +1,10 @@
 *.pyc
 .idea/
-./saved_code
+.saved_code
 .data/
 *.tar.gz
 *.tar
 *.h5
 *.hdf5
+*.sgf
 *.npy
