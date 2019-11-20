@@ -1,0 +1,30 @@
+D:\Go-Brainer\v0.2>python train_1.py
+Using TensorFlow backend.
+2019-10-20 18:11:56.529527: I tensorflow/core/platform/cpu_feature_guard.cc:142] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2
+Model: "sequential_1"
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #
+=================================================================
+dense_1 (Dense)              (None, 1000)              82000
+_________________________________________________________________
+dense_2 (Dense)              (None, 500)               500500
+_________________________________________________________________
+dense_3 (Dense)              (None, 81)                40581
+=================================================================
+Total params: 623,081
+Trainable params: 623,081
+Non-trainable params: 0
+_________________________________________________________________
+Train on 1023 samples, validate on 114 samples
+Epoch 1/5
+1023/1023 [==============================] - 0s 111us/step - loss: 0.2955 - accuracy: 0.0176 - val_loss: 0.2861 - val_accuracy: 0.0175
+Epoch 2/5
+1023/1023 [==============================] - 0s 62us/step - loss: 0.2776 - accuracy: 0.0176 - val_loss: 0.2686 - val_accuracy: 0.0175
+Epoch 3/5
+1023/1023 [==============================] - 0s 60us/step - loss: 0.2605 - accuracy: 0.0176 - val_loss: 0.2520 - val_accuracy: 0.0175
+Epoch 4/5
+1023/1023 [==============================] - 0s 60us/step - loss: 0.2443 - accuracy: 0.0176 - val_loss: 0.2362 - val_accuracy: 0.0175
+Epoch 5/5
+1023/1023 [==============================] - 0s 59us/step - loss: 0.2290 - accuracy: 0.0176 - val_loss: 0.2213 - val_accuracy: 0.0175
+Test loss: 0.2213174222331298
+Test accuracy: 0.017543859779834747

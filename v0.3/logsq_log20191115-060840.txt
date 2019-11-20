@@ -1,0 +1,5 @@
+----------------------
+Starting from ./agents/q_agent_0.h5 at 2019-11-15 06:08:40.302492
+Total games so far 0
+Won 231 / 480 games (0.481)
+Total games so far 100
