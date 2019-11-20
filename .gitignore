@@ -8,3 +8,4 @@
 *.hdf5
 *.sgf
 *.npy
+*.npz

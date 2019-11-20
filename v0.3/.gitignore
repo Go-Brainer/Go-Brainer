@@ -1,8 +1,0 @@
-*.pyc
-.idea/
-.data/
-*.tar.gz
-*.tar
-*.h5
-*.hdf5
-*.npy
