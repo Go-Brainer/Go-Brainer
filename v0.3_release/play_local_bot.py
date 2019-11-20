@@ -2,6 +2,7 @@
 from dlgo.gtp.play_local import LocalGtpBot
 from dlgo.agent.termination import PassWhenOpponentPasses
 from dlgo.agent.predict import load_prediction_agent
+from dlgo.agent.pg import load_policy_agent
 import h5py
 import tensorflow as tf
 
@@ -11,7 +12,7 @@ import tensorflow as tf
 gpus = tf.config.experimental.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(gpus[0], True)
 
-bot = load_prediction_agent(h5py.File("./agents/deep_bot_A0.h5", "r"))
+bot = load_policy_agent(h5py.File("./agents/alphago_rl_policy.h5", "r"))
 gtp_bot = LocalGtpBot(go_bot=bot, termination=PassWhenOpponentPasses(),
                       handicap=9, opponent='gnugo')
 gtp_bot.run()

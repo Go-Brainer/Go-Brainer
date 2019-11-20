@@ -8,6 +8,8 @@ __all__ = [
     'Board',
     'GameState',
     'Move',
+    'Player',
+    'Point'
 ]
 
 neighbor_tables = {}
