@@ -68,8 +68,6 @@ def simulate_game(black_player, white_player, board_size):
         next_move = agents[game.next_player].select_move(game)
         moves.append(next_move)
         game = game.apply_move(next_move)
-
-    print_board(game.board)
     game_result = scoring.compute_game_result(game)
     print(game_result)
 
@@ -300,10 +298,10 @@ def evaluate(learning_agent, reference_agent,
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--agent', default="./agents/q_agent.h5")
-    parser.add_argument('--games-per-batch', '-g', type=int, default=20)
+    parser.add_argument('--agent', default="./agents/q_agent_A.h5")
+    parser.add_argument('--games-per-batch', '-g', type=int, default=200)
     parser.add_argument('--work-dir', '-d', default="./")
-    parser.add_argument('--num-workers', '-w', type=int, default=1)
+    parser.add_argument('--num-workers', '-w', type=int, default=8)
     parser.add_argument('--temperature', '-t', type=float, default=0.5)
     parser.add_argument('--board-size', '-b', type=int, default=19)
     parser.add_argument('--lr', type=float, default=0.01)
@@ -329,6 +327,8 @@ def main():
     experience_file = os.path.join(args.work_dir, 'exp_temp.hdf5')
     tmp_agent = os.path.join(args.work_dir, 'agent_temp.hdf5')
     working_agent = os.path.join(args.work_dir, 'agent_cur.hdf5')
+    eval_games = 100
+    eval_threshold = 69
     total_games = 0
     while True:
         print('Reference: %s' % (reference_agent,))
@@ -346,20 +346,20 @@ def main():
         total_games += args.games_per_batch
         wins = evaluate(
             learning_agent, reference_agent,
-            num_games=480,
+            num_games=eval_games,
             num_workers=args.num_workers,
             board_size=args.board_size,
             temperature=temperature)
-        print('Won %d / 480 games (%.3f)' % (
-            wins, float(wins) / 480.0))
-        logf.write('Won %d / 480 games (%.3f)\n' % (
-            wins, float(wins) / 480.0))
+        print('Won %d / %d games (%.3f)' % (
+            wins, eval_games, float(wins) / 480.0))
+        logf.write('Won %d / %d games (%.3f)\n' % (
+            wins, eval_games, float(wins) / 480.0))
         shutil.copy(tmp_agent, working_agent)
         learning_agent = working_agent
-        if wins >= 262:
+        if wins >= eval_threshold:
             next_filename = os.path.join(
                 args.work_dir,
-                'agent_%08d.hdf5' % (total_games,))
+                'agent_', timestr, 'hdf5')
             shutil.move(tmp_agent, next_filename)
             reference_agent = next_filename
             logf.write('New reference is %s\n' % next_filename)

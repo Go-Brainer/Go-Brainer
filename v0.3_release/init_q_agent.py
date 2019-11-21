@@ -13,7 +13,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--board-size', type=int, default=19)
     parser.add_argument('--network', default='large')
-    parser.add_argument('--hidden-size', type=int, default=512)
+    parser.add_argument('--hidden-size', type=int, default=256)
     parser.add_argument('output_file')
     args = parser.parse_args()
 

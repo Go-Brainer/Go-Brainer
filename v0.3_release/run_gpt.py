@@ -8,5 +8,5 @@ agent = load_prediction_agent(model_file)
 strategy = termination.get("opponent_passes")
 termination_agent = termination.TerminationAgent(agent, strategy)
 
-frontend = GTPFrontend(agent)
+frontend = GTPFrontend(termination_agent)
 frontend.run()
