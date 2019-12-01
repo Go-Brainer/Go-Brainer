@@ -1,6 +1,7 @@
 *.pyc
 .idea/
 .saved_code/
+.v0.3_release/node_modules/
 .data/
 *.tar.gz
 *.tar
