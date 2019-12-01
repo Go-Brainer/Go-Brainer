@@ -1,13 +1,12 @@
 *.pyc
-.idea/
-.saved_code/
-.v0.3_release/node_modules/
-.data/
 *.tar.gz
 *.tar
 *.h5
 *.hdf5
-*.sgf
 *.npy
 *.npz
 
+idea/
+saved_code/
+data/
+v0.3_release/node_modules/
