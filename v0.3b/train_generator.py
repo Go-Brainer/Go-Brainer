@@ -1,11 +1,13 @@
 # tag::train_generator_imports[]
 from dlgo.data.parallel_processor import GoDataProcessor
-from dlgo.encoders.oneplane import OnePlaneEncoder
+from dlgo.encoders.sevenplane import SevenPlaneEncoder
 
-from dlgo.networks import small
+from dlgo.networks import large
 from keras.models import Sequential
 from keras.layers.core import Dense
-from keras.callbacks import ModelCheckpoint  # <1>
+from keras.layers import Input, concatenate
+from keras.callbacks import ModelCheckpoint
+from keras.models import Model
 
 from multiprocessing import freeze_support
 import tensorflow as tf
@@ -22,7 +24,7 @@ def main():
     num_classes = go_board_rows * go_board_cols
     num_games = 100
 
-    encoder = OnePlaneEncoder((go_board_rows, go_board_cols))  # <1>
+    encoder = SevenPlaneEncoder((go_board_rows, go_board_cols))  # <1>
 
     processor = GoDataProcessor(encoder=encoder.name())  # <2>
 
@@ -35,13 +37,20 @@ def main():
     # end::train_generator_generator[]
 
     # tag::train_generator_model[]
-    input_shape = (encoder.num_planes, go_board_rows, go_board_cols)
-    network_layers = small.layers(input_shape)
-    model = Sequential()
-    for layer in network_layers:
-        model.add(layer)
-    model.add(Dense(num_classes, activation='softmax'))
-    model.compile(loss='categorical_crossentropy', optimizer='sgd', metrics=['accuracy'])
+    board_input = Input(shape=encoder.shape(), name='board_input')
+    action_input = Input(shape=(encoder.num_points(),), name='action_input')
+
+    processed_board = board_input
+    network = large.layers(encoder.shape())
+    for layer in network:
+        processed_board = layer(processed_board)
+
+    board_plus_action = concatenate([action_input, processed_board])
+    hidden_layer = Dense(256, activation='relu')(board_plus_action)
+    value_output = Dense(1, activation='sigmoid')(hidden_layer)
+
+    model = Model(inputs=[board_input, action_input], outputs=value_output)
+
     # end::train_generator_model[]
 
     # tag::train_generator_fit[]

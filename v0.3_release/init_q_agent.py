@@ -21,6 +21,8 @@ def main():
     board_input = Input(shape=encoder.shape(), name='board_input')
     action_input = Input(shape=(encoder.num_points(),), name='action_input')
 
+    output_file = str(args.output_file).replace('.', '_' + encoder.name() + '.')
+
     processed_board = board_input
     network = getattr(dlgo.networks, args.network)
     for layer in network.layers(encoder.shape()):
@@ -33,7 +35,7 @@ def main():
     model = Model(inputs=[board_input, action_input], outputs=value_output)
 
     new_agent = rl.QAgent(model, encoder)
-    with h5py.File(args.output_file, 'w') as outf:
+    with h5py.File(output_file, 'w') as outf:
         new_agent.serialize(outf)
 
 

@@ -7,6 +7,9 @@ from dlgo.gtp.board import gtp_position_to_coords, coords_to_gtp_position
 from dlgo.goboard_fast import GameState, Move
 from dlgo.agent.termination import TerminationAgent
 from dlgo.utils import print_board
+from dlgo.scoring import compute_game_result
+
+import tensorflow as tf
 # end::gtp_frontend_imports[]
 
 __all__ = [
@@ -39,6 +42,7 @@ class GTPFrontend:
     def __init__(self, termination_agent, termination=None):
         self.agent = termination_agent
         self.game_state = GameState.new_game(19)
+        self.moves_played = 0
         self._input = sys.stdin
         self._output = sys.stdout
         self._stopped = False
@@ -61,6 +65,17 @@ class GTPFrontend:
 
 # tag::gtp_frontend_run[]
     def run(self):
+        gpus = tf.config.experimental.list_physical_devices('GPU')
+        if gpus:
+            # Restrict TensorFlow to only use the first GPU
+            try:
+                tf.config.experimental.set_visible_devices(gpus[0], 'GPU')
+                tf.config.experimental.set_memory_growth(gpus[0], True)
+                tf.config.set_soft_device_placement(True)
+            except RuntimeError as e:
+                print(e)
+
+
         while not self._stopped:
             input_line = self._input.readline().strip()
             cmd = command.parse(input_line)
@@ -85,7 +100,12 @@ class GTPFrontend:
 
     def handle_genmove(self, color):
         move = self.agent.select_move(self.game_state)
+        if self.moves_played > 10:
+            game_result = compute_game_result(self.game_state)
+            if game_result.winner != color and game_result.winning_margin >= 1250:
+                return response.success('resign')
         self.game_state = self.game_state.apply_move(move)
+        self.moves_played += 1
         if move.is_pass:
             return response.success('pass')
         if move.is_resign:

@@ -43,6 +43,7 @@ def experience_simulation(num_games, agent1, agent2):
         collector2.begin_episode()
         agent2.set_collector(collector2)
 
+        print("Game %d of %d" % (i+1, num_games))
         if color1 == Player.black:
             black_player, white_player = agent1, agent2
         else:

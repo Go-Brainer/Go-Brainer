@@ -9,6 +9,8 @@ import shutil
 import numpy as np
 import multiprocessing
 from os import sys
+import os
+import time
 from keras.utils import to_categorical
 
 from dlgo.gosgf import Sgf_game
@@ -67,6 +69,8 @@ class GoDataProcessor:
         return tar_file
 
     def process_zip(self, zip_file_name, data_file_name, game_list):
+        print(str(os.getpid()) + " has started on file " + str(zip_file_name))
+        t_0 = time.time()
         tar_file = self.unzip_data(zip_file_name)
         zip_file = tarfile.open(self.data_dir + '/' + tar_file)
 
@@ -118,6 +122,12 @@ class GoDataProcessor:
             current_labels, labels = labels[:chunksize], labels[chunksize:]
             np.save(feature_file, current_features)
             np.save(label_file, current_labels)
+
+        hours, rem = divmod(time.time() - t_0, 3600)
+        minutes, seconds = divmod(rem, 60)
+        elapsed = "{:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds)
+
+        print(str(os.getpid()) + " completed file " + str(zip_file_name) + " after " + elapsed)
 
     def consolidate_games(self, name, samples):
         files_needed = set(file_name for file_name, index in samples)
@@ -183,7 +193,7 @@ class GoDataProcessor:
                 zips_to_process.append((self.__class__, self.encoder_string, zip_name,
                                         self.data_dir, data_file_name, indices_by_zip_name[zip_name]))
 
-        cores = multiprocessing.cpu_count()  # Determine number of CPU cores and split work load among them
+        cores = max(2, multiprocessing.cpu_count()-2)  # Determine number of CPU cores and split work load among them
         pool = multiprocessing.Pool(processes=cores)
         p = pool.map_async(worker, zips_to_process)
         try:
@@ -192,6 +202,8 @@ class GoDataProcessor:
             pool.terminate()
             pool.join()
             sys.exit(-1)
+        pool.close()
+        pool.join()
 
     def num_total_examples(self, zip_file, game_list, name_list):
         total_examples = 0

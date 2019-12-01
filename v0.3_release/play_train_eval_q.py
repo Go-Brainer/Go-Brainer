@@ -298,10 +298,10 @@ def evaluate(learning_agent, reference_agent,
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--agent', default="./agents/q_agent_A.h5")
-    parser.add_argument('--games-per-batch', '-g', type=int, default=200)
-    parser.add_argument('--work-dir', '-d', default="./")
-    parser.add_argument('--num-workers', '-w', type=int, default=8)
+    parser.add_argument('--agent', default="/q_agent_A_sevenplane.h5")
+    parser.add_argument('--games-per-batch', '-g', type=int, default=12)
+    parser.add_argument('--work-dir', '-d', default="./agents")
+    parser.add_argument('--num-workers', '-w', type=int, default=4)
     parser.add_argument('--temperature', '-t', type=float, default=0.5)
     parser.add_argument('--board-size', '-b', type=int, default=19)
     parser.add_argument('--lr', type=float, default=0.01)
@@ -309,7 +309,7 @@ def main():
     parser.add_argument('--log-file', '-l', default="q_log")
 
     args = parser.parse_args()
-    timestr = time.strftime("%Y%m%d-%H%M%S")
+    timestr = time.strftime("%Y%m%d")
     logf_name = args.log_file + timestr + ".txt"
     if not os.path.exists("./logs"):
         os.makedirs("./logs")
@@ -318,57 +318,63 @@ def main():
     logf.write('Starting from %s at %s\n' % (
         args.agent, datetime.datetime.now()))
 
+    output_file = str(args.agent).replace('.h5', '_')
+
     temp_decay = 0.98
     min_temp = 0.01
     temperature = args.temperature
 
-    learning_agent = args.agent
-    reference_agent = args.agent
-    experience_file = os.path.join(args.work_dir, 'exp_temp.hdf5')
-    tmp_agent = os.path.join(args.work_dir, 'agent_temp.hdf5')
-    working_agent = os.path.join(args.work_dir, 'agent_cur.hdf5')
-    eval_games = 100
-    eval_threshold = 69
+    learning_agent = args.work_dir + args.agent
+    reference_agent = args.work_dir + args.agent
+    experience_file = args.work_dir + 'exp_temp.hdf5'
+    tmp_agent = args.work_dir + 'agent_temp.hdf5'
+    working_agent = args.work_dir + 'agent_cur.hdf5'
     total_games = 0
-    while True:
+    generation = 0
+    eval_games = 120
+    eval_threshold = 70
+    t_0 = time.time()
+    while generation < 5:
         print('Reference: %s' % (reference_agent,))
         logf.write('Total games so far %d\n' % (total_games,))
         generate_experience(
             learning_agent, reference_agent,
             experience_file,
-            num_games=args.games_per_batch,
+            num_games=args.games_per_batch*args.num_workers,
             board_size=args.board_size,
             num_workers=args.num_workers,
             temperature=temperature)
-        train_on_experience(
-            learning_agent, tmp_agent, experience_file,
-            lr=args.lr, batch_size=args.bs)
-        total_games += args.games_per_batch
-        wins = evaluate(
-            learning_agent, reference_agent,
-            num_games=eval_games,
-            num_workers=args.num_workers,
-            board_size=args.board_size,
-            temperature=temperature)
-        print('Won %d / %d games (%.3f)' % (
-            wins, eval_games, float(wins) / 480.0))
-        logf.write('Won %d / %d games (%.3f)\n' % (
-            wins, eval_games, float(wins) / 480.0))
-        shutil.copy(tmp_agent, working_agent)
-        learning_agent = working_agent
-        if wins >= eval_threshold:
-            next_filename = os.path.join(
-                args.work_dir,
-                'agent_', timestr, 'hdf5')
-            shutil.move(tmp_agent, next_filename)
-            reference_agent = next_filename
-            logf.write('New reference is %s\n' % next_filename)
-            temperature = max(min_temp, temp_decay * temperature)
-            logf.write('New temperature is %f\n' % temperature)
-        else:
-            print('Keep learning\n')
-        logf.flush()
+        # train_on_experience(
+        #     learning_agent, tmp_agent, experience_file,
+        #     lr=args.lr, batch_size=args.bs)
+        # total_games += args.games_per_batch
+        # wins = evaluate(
+        #     learning_agent, reference_agent,
+        #     num_games=eval_games,
+        #     num_workers=args.num_workers,
+        #     board_size=args.board_size,
+        #     temperature=temperature)
+        # print('Won %d / %d games (%.3f)' % (
+        #     wins, eval_games, float(wins) / float(eval_games)))
+        # logf.write('Won %d / %d games (%.3f)\n' % (
+        #     wins, eval_games, float(wins) / float(eval_games)))
+        # shutil.copy(tmp_agent, working_agent)
+        # learning_agent = working_agent
+        # if wins >= eval_threshold:
+        #     next_filename = args.work_dir + output_file + str(generation) + '.h5'
+        #     shutil.move(tmp_agent, next_filename)
+        #     reference_agent = next_filename
+        #     logf.write('New reference is %s\n' % next_filename)
+        #     temperature = max(min_temp, temp_decay * temperature)
+        #     logf.write('New temperature is %f\n' % temperature)
+        # else:
+        #     print('Keep learning\n')
+        # logf.flush()
+        generation = 5
 
+
+    elapsed = time.time() - t_0
+    print("Completed average %.4f seconds per game" % float(elapsed / (args.games_per_batch*args.num_workers)))
 
 if __name__ == '__main__':
     main()
