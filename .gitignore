@@ -6,7 +6,7 @@
 *.npy
 *.npz
 
-idea/
+.idea/
 saved_code/
 data/
 v0.3_release/node_modules/
