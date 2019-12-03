@@ -18,7 +18,7 @@ def main():
             print(e)
 
 
-    model_file = h5py.File('./agents/deep_bot_A0.h5', "r")
+    model_file = h5py.File('./agents/deep_bot_B_0.h5', "r")
     agent = load_prediction_agent(model_file)
     strategy = termination.get("opponent_passes")
     termination_agent = termination.TerminationAgent(agent, strategy)
